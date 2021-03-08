@@ -1,0 +1,16 @@
+{
+    "name": "Com.AlgorithmJuice.SerializableDictionary.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:54fadcea31a6bdb4087d5a39249df7d0"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

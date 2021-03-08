@@ -1,0 +1,12 @@
+{
+    "name": "com.algorithmjuice.serializabledictionary",
+    "version": "1.0.0",
+    "displayName": "Serializable Dictionary",
+    "description": "The serialized version of the built-in Dictionary type.",
+    "unity": "2020.2",
+    "unityRelease": "7f1",
+    "author": {
+        "name": "Algorithm Juice",
+        "url": "https://github.com/AlgorithmJuice/SerializableDictionary"
+    }
+}
