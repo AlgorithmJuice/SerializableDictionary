@@ -10,7 +10,6 @@ using UnityEditorInternal;
 public class SerializableDictionaryDrawer : PropertyDrawer {
 
     private ReorderableList list;
-
     private Func<Rect> VisibleRect;
 
     public override void OnGUI (Rect position, SerializedProperty property, GUIContent label) {
@@ -18,6 +17,7 @@ public class SerializableDictionaryDrawer : PropertyDrawer {
             var listProp = property.FindPropertyRelative("list");
             list = new ReorderableList(property.serializedObject, listProp, true, false, true, true);
             list.drawElementCallback = DrawListItems;
+            list.elementHeightCallback = elementHeightCallback;
         }
 
         var firstLine = position;
@@ -32,7 +32,6 @@ public class SerializableDictionaryDrawer : PropertyDrawer {
                  if (tyGUIClip != null) {
                     var piVisibleRect = tyGUIClip.GetProperty("visibleRect", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
                     if (piVisibleRect != null) {
-
                         var getMethod = piVisibleRect.GetGetMethod(true) ?? piVisibleRect.GetGetMethod(false);
                         VisibleRect = (Func<Rect>)Delegate.CreateDelegate(typeof(Func<Rect>), getMethod);
                     }
@@ -61,44 +60,68 @@ public class SerializableDictionaryDrawer : PropertyDrawer {
         var valueProp = element.FindPropertyRelative("Value");
 
         elementIndex.text = $"Element {index}";
+
         /*var label =*/ EditorGUI.BeginProperty(rect, elementIndex, element);
 
         var prevLabelWidth = EditorGUIUtility.labelWidth;
 
-        EditorGUIUtility.labelWidth = 75;
+        var thirdWidth = rect.width / 3f;
 
-        var rect0 = rect; //EditorGUI.PrefixLabel(rect, GUIUtility.GetControlID(FocusType.Passive), label);
+        var keyRect = rect; //EditorGUI.PrefixLabel(rect, GUIUtility.GetControlID(FocusType.Passive), label);
+        keyRect.width = thirdWidth;
+        keyRect.y += 1f;
+        keyRect.height = EditorGUIUtility.singleLineHeight;
 
-        var halfWidth = rect0.width / 2f;
-        rect0.width = halfWidth;
-        rect0.y += 1f;
-        rect0.height -= 2f;
-
-
-        EditorGUIUtility.labelWidth = 40;
+        EditorGUIUtility.labelWidth = 30;
 
         EditorGUI.BeginChangeCheck();
-        EditorGUI.PropertyField(rect0, keyProp);
+        EditorGUI.PropertyField(keyRect, keyProp);
 
-        rect0.x += halfWidth + 4f;
+        var valueRect = rect; //EditorGUI.PrefixLabel(rect, GUIUtility.GetControlID(FocusType.Passive), label);
+        valueRect.width = 2 * thirdWidth;
+        valueRect.y += 1f;
+        valueRect.height -= 2f;
+        valueRect.x += thirdWidth + 8f;
+        valueRect.xMin += 5f;
 
-        EditorGUI.PropertyField(rect0, valueProp);
+        EditorGUI.PropertyField(valueRect, valueProp);
 
         EditorGUIUtility.labelWidth = prevLabelWidth;
 
         EditorGUI.EndProperty();
+  
     }
 
     public override float GetPropertyHeight(SerializedProperty property, GUIContent label) {
+        float height;
         if (property.isExpanded) {
             var listProp = property.FindPropertyRelative("list");
-            if (listProp.arraySize < 2)
-                return EditorGUIUtility.singleLineHeight + 52f;
-            else
-                return EditorGUIUtility.singleLineHeight + 23f * listProp.arraySize + 29;
+            if (listProp.arraySize < 1){
+                height = EditorGUIUtility.singleLineHeight + 70f;
+            }
+            else{
+                int i = 0;
+                int lineCount = 0;
+                for(i = 0; i < listProp.arraySize; i++){
+                    if(listProp.GetArrayElementAtIndex(i).FindPropertyRelative("Value").isExpanded){
+                        lineCount += listProp.GetArrayElementAtIndex(i).FindPropertyRelative("Value").CountInProperty();
+                    }
+                    else{
+                    lineCount++;
+                    }
+                }
+            height = (EditorGUIUtility.singleLineHeight + 1.0f) * lineCount + 70f;
+            }
         }
-        else
-            return EditorGUIUtility.singleLineHeight;
+        else{
+            height = EditorGUIUtility.singleLineHeight;
+        }
+        return height;
+    }
+
+    public float elementHeightCallback(int index){
+        SerializedProperty element = list.serializedProperty.GetArrayElementAtIndex(index);
+        var valueProp = element.FindPropertyRelative("Value");
+        return EditorGUIUtility.singleLineHeight * valueProp.CountInProperty();
     }
 }
-
